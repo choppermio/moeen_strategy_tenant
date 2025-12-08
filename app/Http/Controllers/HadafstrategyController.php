@@ -20,9 +20,10 @@ class HadafstrategyController extends Controller
     public function index()
     {
         //
-
+// dd(current_user_position()->id);
         if (in_array(current_user_position()->id, explode(',', env('STRATEGY_CONTROL_ID'))) || in_array(current_user_position()->id, explode(',', env('ADMIN_ID')))){
             $allhadafstrategy = Hadafstrategy::all();
+            // dd('afa');
         }elseif(current_user_position()->id==14 || current_user_position()->id==15){
             $employee_position_relations = EmployeePositionRelation::where('child_id', current_user_position()->id)->first()->parent_id;
             $allhadafstrategy = Hadafstrategy::where('user_id',$employee_position_relations)->get();

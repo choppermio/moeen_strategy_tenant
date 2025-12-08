@@ -36,12 +36,9 @@
                     <span class="badge badge-info">{{ $employeeposition->name ??'' }} - {{ $employeeposition->user->name??'' }}</span>
                 </td>
                 <td>
-                    @if(env('STRATEGY_CONTROL_ID') && in_array(current_user_position()->id, explode(',', env('STRATEGY_CONTROL_ID'))))
-                        <a href="{{ url('attach-users/'.$employeeposition->id) }}" class="btn btn-secondary btn-sm">
-                            <i class='fas fa-user'></i>
-                        </a>
-                    @endif
-
+                    <a href="{{ url('attach-users/'.$employeeposition->id) }}" class="btn btn-secondary btn-sm">
+                        <i class='fas fa-user'></i>
+                    </a>
                 </td>
                  <td>
                     @php

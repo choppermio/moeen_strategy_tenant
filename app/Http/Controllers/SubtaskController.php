@@ -1140,15 +1140,21 @@ $ticket = Ticket::where('id', $subtask->ticket_id)->first();
 if ($employee && $employee->user) {
     $email = $employee->user->email;
 
-    // Add additional email
+    // Add additional email - strategy employees are global
     // $additionalEmail = 'governance@qimam.org.sa';
-    $strategyemail = \App\Models\EmployeePosition::where('id', env('STRATEGY_CONTROL_ID'))->first();    $additionalEmail = \App\Models\User::where('id', $strategyemail->user_id)->first()->email;
+    $strategyemail = \App\Models\EmployeePosition::withoutGlobalScopes()->where('id', env('STRATEGY_CONTROL_ID'))->first();
+    $additionalEmail = $strategyemail ? \App\Models\User::where('id', $strategyemail->user_id)->first()->email : null;
+    
     if (env('ENVO') !== 'local') {
         try {
+            $recipients = [$email];
+            if ($additionalEmail) {
+                $recipients[] = $additionalEmail;
+            }
             Mail::raw(
                 'تم تغيير حالة الشاهد للمهمة : ' . $subtask->name . ' الى ' . $request->status,
-                function ($message) use ($email, $additionalEmail) {
-                    $message->to([$email, $additionalEmail])
+                function ($message) use ($recipients) {
+                    $message->to($recipients)
                             ->subject('تم تغيير حالة الشاهد للمهمة ');
                 }
             );        } catch (\Exception $e) {

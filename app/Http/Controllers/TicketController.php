@@ -35,6 +35,7 @@ class TicketController extends Controller
     }
     public function index()
     {
+        // dd('afa');
         $current_user_id = auth()->user()->id;
         $users = User::all();
         $current_user_id = EmployeePosition::where('user_id',$current_user_id)->first()->id;
