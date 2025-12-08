@@ -192,6 +192,7 @@
             </tr>
         </thead>
         <tbody>
+            @dd($hadafstrategies)
             @foreach ($hadafstrategies as $strategy)
             <tr>
                 <td>{{ $strategy->name }} </td>

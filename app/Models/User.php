@@ -62,15 +62,27 @@ class User extends Authenticatable
 
     /**
      * Get all accessible organizations for the user
-     * Admins get all organizations, regular users get only assigned ones
+     * Users with 'admin' role in any organization get all organizations
+     * Regular users get only assigned ones
      */
     public function accessibleOrganizations()
     {
+        // Check if user is system admin (based on ADMIN_ID in .env)
         if ($this->isSystemAdmin()) {
             return Organization::where('is_active', true)->get();
         }
         
-        return $this->organizations;
+        // Check if user has 'admin' role in any organization
+        $hasAdminRole = $this->organizations()
+            ->wherePivot('role', 'admin')
+            ->exists();
+        
+        if ($hasAdminRole) {
+            return Organization::where('is_active', true)->get();
+        }
+        
+        // Regular users get only their assigned organizations
+        return $this->organizations()->where('is_active', true)->get();
     }
 
     /**
@@ -123,8 +135,17 @@ class User extends Authenticatable
      */
     public function belongsToOrganization($organization)
     {
-        // Admins have access to all organizations
+        // System admins (based on ADMIN_ID) have access to all organizations
         if ($this->isSystemAdmin()) {
+            return true;
+        }
+        
+        // Users with 'admin' role in any organization have access to all organizations
+        $hasAdminRole = $this->organizations()
+            ->wherePivot('role', 'admin')
+            ->exists();
+        
+        if ($hasAdminRole) {
             return true;
         }
         

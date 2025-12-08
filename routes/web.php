@@ -51,6 +51,109 @@ Route::middleware(['auth'])->group(function () {
         ]);
     });
     
+    // Debug route to check hadafstrategies organization_id
+    Route::get('/debug-hadafstrategies', function() {
+        $all = \App\Models\Hadafstrategy::withoutGlobalScopes()->get(['id', 'name', 'organization_id']);
+        $current_org = current_organization_id();
+        $in_current_org = \App\Models\Hadafstrategy::all();
+        
+        return response()->json([
+            'current_organization_id' => $current_org,
+            'total_records' => $all->count(),
+            'records_in_current_org' => $in_current_org->count(),
+            'all_records' => $all->map(function($h) {
+                return [
+                    'id' => $h->id,
+                    'name' => $h->name,
+                    'organization_id' => $h->organization_id ?? 'NULL',
+                ];
+            }),
+        ]);
+    });
+    
+    // Fix route to update organization_id for existing records
+    Route::get('/fix-hadafstrategies-org/{org_id}', function($org_id) {
+        $updated = \DB::table('hadafstrategies')
+            ->whereNull('organization_id')
+            ->update(['organization_id' => $org_id]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => "Updated $updated records to organization $org_id",
+            'updated_count' => $updated,
+        ]);
+    });
+    
+    // Copy records from one organization to another
+    Route::get('/copy-hadafstrategies/{from_org}/{to_org}', function($from_org, $to_org) {
+        $records = \App\Models\Hadafstrategy::withoutGlobalScopes()
+            ->where('organization_id', $from_org)
+            ->get();
+        
+        $copied = 0;
+        foreach ($records as $record) {
+            $newRecord = $record->replicate();
+            $newRecord->organization_id = $to_org;
+            $newRecord->save();
+            $copied++;
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => "Copied $copied records from organization $from_org to $to_org",
+            'copied_count' => $copied,
+        ]);
+    });
+    
+    // Comprehensive tool to copy ALL organization data
+    Route::get('/copy-all-org-data/{from_org}/{to_org}', function($from_org, $to_org) {
+        $results = [];
+        
+        // Tables to copy with their models
+        $tablesToCopy = [
+            'hadafstrategies' => \App\Models\Hadafstrategy::class,
+            'moasheradastrategies' => \App\Models\Moasheradastrategy::class,
+            'mubadaras' => \App\Models\Mubadara::class,
+            'moashermkmfs' => \App\Models\Moashermkmf::class,
+            'tasks' => \App\Models\Task::class,
+            'subtasks' => \App\Models\Subtask::class,
+            'todos' => \App\Models\Todo::class,
+            'moashers' => \App\Models\Moasher::class,
+        ];
+        
+        foreach ($tablesToCopy as $tableName => $modelClass) {
+            try {
+                $records = $modelClass::withoutGlobalScopes()
+                    ->where('organization_id', $from_org)
+                    ->get();
+                
+                $copied = 0;
+                foreach ($records as $record) {
+                    $newRecord = $record->replicate();
+                    $newRecord->organization_id = $to_org;
+                    $newRecord->save();
+                    $copied++;
+                }
+                
+                $results[$tableName] = [
+                    'success' => true,
+                    'copied' => $copied,
+                ];
+            } catch (\Exception $e) {
+                $results[$tableName] = [
+                    'success' => false,
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => "Data copy completed from organization $from_org to $to_org",
+            'results' => $results,
+        ]);
+    });
+    
     // Organization selection and switching
     Route::get('/organization/select', [OrganizationController::class, 'select'])->name('organization.select');
     Route::post('/organization/switch', [OrganizationController::class, 'switch'])->name('organization.switch');

@@ -309,19 +309,31 @@ color:white !important;
                                 </button>
                                 <div class="org-dropdown-menu" id="orgDropdownMenu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; margin-top: 2px;">
                                     @foreach($userOrganizations as $org)
+                                        @php
+                                            $userPosition = \App\Models\EmployeePosition::withoutGlobalScopes()
+                                                ->where('user_id', Auth::id())
+                                                ->where('organization_id', $org->id)
+                                                ->first();
+                                        @endphp
                                         @if(!isset($currentOrganization) || $org->id !== $currentOrganization->id)
                                             <form action="{{ route('organization.switch') }}" method="POST" style="margin: 0;">
                                                 @csrf
                                                 <input type="hidden" name="organization_id" value="{{ $org->id }}">
                                                 <button type="submit" class="org-switch-btn" style="display: block; width: 100%; padding: 8px 12px; text-decoration: none; color: #333; text-align: right; border: none; border-bottom: 1px solid #eee; background: white; cursor: pointer;">
                                                     <i class="fas fa-exchange-alt fa-sm text-muted ml-2"></i>
-                                                    {{ $org->name }}
+                                                    <strong>{{ $org->name }}</strong>
+                                                    @if($userPosition)
+                                                        <br><small class="text-muted" style="padding-right: 20px;">{{ $userPosition->name }}</small>
+                                                    @endif
                                                 </button>
                                             </form>
                                         @else
                                             <span style="display: block; padding: 8px 12px; background: #e9ecef; color: #333; text-align: right;">
                                                 <i class="fas fa-check fa-sm text-success ml-2"></i>
-                                                {{ $org->name }}
+                                                <strong>{{ $org->name }}</strong>
+                                                @if($userPosition)
+                                                    <br><small class="text-muted" style="padding-right: 20px;">{{ $userPosition->name }}</small>
+                                                @endif
                                             </span>
                                         @endif
                                     @endforeach
@@ -1187,14 +1199,25 @@ $(document).ready(function() {
 <!-- Organization Switcher Script -->
 <script>
 $(document).ready(function() {
+    console.log('Organization Switcher Script Loaded');
+    console.log('Button exists:', $('#orgSwitcherBtn').length);
+    console.log('Menu exists:', $('#orgDropdownMenu').length);
+    
     // Toggle organization dropdown
     $('#orgSwitcherBtn').on('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
+        console.log('Organization switcher button clicked!');
+        
         var menu = $('#orgDropdownMenu');
+        console.log('Menu visibility:', menu.is(':visible'));
+        console.log('Menu display:', menu.css('display'));
+        
         if (menu.is(':visible')) {
+            console.log('Hiding menu...');
             menu.slideUp(150);
         } else {
+            console.log('Showing menu...');
             menu.slideDown(150);
         }
     });

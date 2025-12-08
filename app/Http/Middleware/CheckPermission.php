@@ -21,15 +21,26 @@ class CheckPermission
             return redirect()->route('login');
         }
 
+        $user = auth()->user();
         $position = current_user_position();
         
-        if (!$position) {
-            abort(403, 'ليس لديك صلاحية الوصول إلى هذه الصفحة');
+        // Check if user is system admin (based on ADMIN_ID env)
+        if ($position && is_admin($position->id)) {
+            return $next($request);
         }
 
-        // System admins have all permissions in all organizations
-        if (is_admin($position->id)) {
+        // Check if user has 'admin' role in any organization
+        $hasAdminRole = $user->organizations()
+            ->wherePivot('role', 'admin')
+            ->exists();
+        
+        if ($hasAdminRole) {
             return $next($request);
+        }
+
+        // For regular users, check their position and permissions
+        if (!$position) {
+            abort(403, 'ليس لديك صلاحية الوصول إلى هذه الصفحة');
         }
 
         // Check if user has the required permission

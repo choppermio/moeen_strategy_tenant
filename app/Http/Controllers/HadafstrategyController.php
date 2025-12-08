@@ -29,6 +29,7 @@ class HadafstrategyController extends Controller
         }else{
             $allhadafstrategy = Hadafstrategy::where('user_id',current_user_position()->id)->get();
         }
+        
        return View('/hadafstrategy/index', [
             'hadafstrategies' => $allhadafstrategy
         ]);
