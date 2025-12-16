@@ -18,7 +18,8 @@ class HadafstrategyController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
+    { 
+        //dfadsf
         //
 // dd(current_user_position()->id);
         if (in_array(current_user_position()->id, explode(',', env('STRATEGY_CONTROL_ID'))) || in_array(current_user_position()->id, explode(',', env('ADMIN_ID')))){
