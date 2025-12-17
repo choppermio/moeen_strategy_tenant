@@ -23,7 +23,12 @@
         <tbody>
             @foreach ($moasheradastrategies as $moasheradastrategy)
             <tr>
-                <td>{{ $moasheradastrategy->name }}</td>                <td>
+                <td>
+                    {{ $moasheradastrategy->name }}
+                    <a href="{{ route('moasheradastrategy.attach', $moasheradastrategy->id) }}" class="btn btn-sm btn-info ml-2">
+                        <i class="fas fa-link"></i> ربط مؤشرات الكفاءة والفعالية
+                    </a>
+                </td>                <td>
                     <div class="d-flex align-items-center">
                         <div class="progress progress-sm flex-grow-1 mr-2">
                             <div class="progress-bar 

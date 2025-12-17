@@ -98,18 +98,17 @@ return $employee_position;
 }}
 
 if (!function_exists('current_user_position')) {
-    /**
-     * Get the current user's employee position for the current organization
-     * If no position exists for current organization, falls back to first position found
-     */
     function current_user_position(){
+        if (!auth()->check()) {
+            return null;
+        }
+        
         $current_user = auth()->user()->id;
         $current_org_id = current_organization_id();
         
-        // First, try to find position in the current organization
+        // First, try to get the position in the current organization
         if ($current_org_id) {
-            $employee_position = \App\Models\EmployeePosition::withoutGlobalScopes()
-                ->where('user_id', $current_user)
+            $employee_position = \App\Models\EmployeePosition::where('user_id', $current_user)
                 ->where('organization_id', $current_org_id)
                 ->first();
             
@@ -118,61 +117,43 @@ if (!function_exists('current_user_position')) {
             }
         }
         
-        // Fallback: Get any position for this user (for backward compatibility)
-        $employee_position = \App\Models\EmployeePosition::withoutGlobalScopes()
-            ->where('user_id', $current_user)
-            ->first();
+        // Check if user is an organization admin
+        $isOrgAdmin = auth()->user()->organizations()->wherePivot('role', 'admin')->exists();
+        $isCurrentOrgAdmin = auth()->user()->isOrganizationAdmin();
+        
+        // If user is an admin but has no position in current org, create one
+        if (($isOrgAdmin || $isCurrentOrgAdmin) && $current_org_id) {
+            // Check if a global admin position exists for this organization
+            $globalAdminPosition = \App\Models\EmployeePosition::where('organization_id', $current_org_id)
+                ->where('name', 'مدير المنظمة')
+                ->where('user_id', $current_user)
+                ->first();
             
+            if (!$globalAdminPosition) {
+                // Create a global admin position for this user in this organization
+                $globalAdminPosition = \App\Models\EmployeePosition::create([
+                    'user_id' => $current_user,
+                    'organization_id' => $current_org_id,
+                    'name' => 'مدير المنظمة',
+                ]);
+                
+                // Assign all permissions to this position
+                $allPermissions = \App\Models\Permission::all();
+                $globalAdminPosition->permissions()->sync($allPermissions->pluck('id'));
+            }
+            
+            return $globalAdminPosition;
+        }
+        
+        // Fallback: get any position for this user
+        $employee_position = \App\Models\EmployeePosition::where('user_id', $current_user)->first();
         return $employee_position;
-    }
-}
-
-if (!function_exists('user_positions_by_organization')) {
-    /**
-     * Get all employee positions for the current user grouped by organization
-     * Returns array with organization_id as key and position as value
-     * 
-     * @return array
-     */
-    function user_positions_by_organization()
-    {
-        if (!auth()->check()) {
-            return [];
-        }
-        
-        $positions = \App\Models\EmployeePosition::withoutGlobalScopes()
-            ->where('user_id', auth()->id())
-            ->get()
-            ->keyBy('organization_id');
-            
-        return $positions;
-    }
-}
-
-if (!function_exists('user_position_in_organization')) {
-    /**
-     * Get the user's employee position in a specific organization
-     * 
-     * @param int $organization_id
-     * @return \App\Models\EmployeePosition|null
-     */
-    function user_position_in_organization($organization_id)
-    {
-        if (!auth()->check()) {
-            return null;
-        }
-        
-        return \App\Models\EmployeePosition::withoutGlobalScopes()
-            ->where('user_id', auth()->id())
-            ->where('organization_id', $organization_id)
-            ->first();
     }
 }
 
 if (!function_exists('has_permission')) {
     /**
      * Check if current user has a specific permission
-     * System admins (ADMIN_ID) and users with 'admin' role have all permissions
      */
     function has_permission($permissionName)
     {
@@ -180,24 +161,7 @@ if (!function_exists('has_permission')) {
             return false;
         }
         
-        $user = auth()->user();
         $position = current_user_position();
-        
-        // System admins (based on ADMIN_ID env) have all permissions
-        if ($position && is_admin($position->id)) {
-            return true;
-        }
-        
-        // Users with 'admin' role in any organization have all permissions
-        $hasAdminRole = $user->organizations()
-            ->wherePivot('role', 'admin')
-            ->exists();
-        
-        if ($hasAdminRole) {
-            return true;
-        }
-        
-        // Regular users - check their position permissions
         if (!$position) {
             return false;
         }
@@ -209,7 +173,6 @@ if (!function_exists('has_permission')) {
 if (!function_exists('has_any_permission')) {
     /**
      * Check if current user has any of the given permissions
-     * System admins (ADMIN_ID) and users with 'admin' role have all permissions
      */
     function has_any_permission($permissions)
     {
@@ -217,24 +180,7 @@ if (!function_exists('has_any_permission')) {
             return false;
         }
         
-        $user = auth()->user();
         $position = current_user_position();
-        
-        // System admins (based on ADMIN_ID env) have all permissions
-        if ($position && is_admin($position->id)) {
-            return true;
-        }
-        
-        // Users with 'admin' role in any organization have all permissions
-        $hasAdminRole = $user->organizations()
-            ->wherePivot('role', 'admin')
-            ->exists();
-        
-        if ($hasAdminRole) {
-            return true;
-        }
-        
-        // Regular users - check their position permissions
         if (!$position) {
             return false;
         }
@@ -416,24 +362,6 @@ if (!function_exists('is_admin')) {
         $admin_list = array_map('trim', explode(',', $admin_ids));
         
         return in_array((string)$employee_id, $admin_list);
-    }
-}
-
-if (!function_exists('is_organization_admin')) {
-    /**
-     * Check if current user has 'admin' role in any organization
-     * 
-     * @return bool
-     */
-    function is_organization_admin()
-    {
-        if (!auth()->check()) {
-            return false;
-        }
-        
-        return auth()->user()->organizations()
-            ->wherePivot('role', 'admin')
-            ->exists();
     }
 }
 

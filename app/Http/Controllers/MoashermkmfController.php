@@ -50,6 +50,11 @@ class MoashermkmfController extends Controller
             'percentage' => 0,
             'parent_id' => $request->input('mubadara'),
             'type' => $request->input('type'),
+            'reached' => $request->input('reached'),
+            'target' => $request->input('target'),
+            'calculation_type' => $request->input('calculation_type'),
+            'the_vari' => $request->input('the_vari'),
+            'weight' => $request->input('weight'),
         ]);
         return redirect()->back()->with('success', 'تم إضافة الهدف بنجاح');
     }
@@ -93,6 +98,11 @@ public function update(Request $request, $id)
         'name' => $validatedData['name'],
         // 'parent_id' => $validatedData['mubadara'], // Assuming 'mubadara_id' is the foreign key column
         'type' => $validatedData['type'],
+        'reached' => $request->input('reached'),
+        'target' => $request->input('target'),
+        'calculation_type' => $request->input('calculation_type'),
+        'the_vari' => $request->input('the_vari'),
+        'weight' => $request->input('weight'),
     ]);
 
     return redirect()->route('moashermkmf.index')->with('success', 'Updated successfully!');

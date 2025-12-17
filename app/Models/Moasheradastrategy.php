@@ -20,4 +20,9 @@ class Moasheradastrategy extends Model
     {
       return $this->belongsToMany(Mubadara::class);
     }
+    
+    public function moashermkmfs()
+    {
+      return $this->belongsToMany(Moashermkmf::class, 'moasheradastrategy_moashermkmf');
+    }
 }

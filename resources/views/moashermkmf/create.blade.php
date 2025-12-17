@@ -46,6 +46,35 @@
         </select>
         </div>
 
+    <div class="form-group">
+        <label for="reached">المحقق:</label>
+        <input type="number" step="0.01" class="form-control" name="reached"/>
+    </div>
+
+    <div class="form-group">
+        <label for="target">المستهدف:</label>
+        <input type="number" step="0.01" class="form-control" name="target"/>
+    </div>
+
+    <div class="form-group">
+        <label for="calculation_type">نوع الحساب:</label>
+        <select class="form-control" name="calculation_type">
+            <option value="">اختر نوع الحساب</option>
+            <option value="آلي">آلي</option>
+            <option value="يدوي">يدوي</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="the_vari">المتغير:</label>
+        <input type="text" class="form-control" name="the_vari"/>
+    </div>
+
+    <div class="form-group">
+        <label for="weight">الوزن:</label>
+        <input type="number" step="0.01" class="form-control" name="weight"/>
+    </div>
+
  
 <div class="form-group">
     <button class="btn-primary">حفظ</button>

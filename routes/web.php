@@ -51,6 +51,42 @@ Route::middleware(['auth'])->group(function () {
         ]);
     });
     
+    // Debug route for permissions
+    Route::get('/debug-permissions', function() {
+        $user = auth()->user();
+        $position = \App\Models\EmployeePosition::where('user_id', $user->id)->first();
+        $orgs = \App\Models\Organization::all();
+        
+        $orgData = [];
+        foreach ($orgs as $org) {
+            $userInOrg = $org->users()->where('user_id', $user->id)->first();
+            $orgData[] = [
+                'id' => $org->id,
+                'name' => $org->name,
+                'user_role' => $userInOrg ? $userInOrg->pivot->role : 'not assigned',
+                'is_current' => $user->current_organization_id == $org->id,
+            ];
+        }
+        
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'current_organization_id' => $user->current_organization_id,
+            ],
+            'position' => $position ? [
+                'id' => $position->id,
+                'name' => $position->name ?? 'N/A',
+                'organization_id' => $position->organization_id ?? 'N/A',
+                'permissions_count' => $position->permissions->count(),
+                'permissions' => $position->permissions->pluck('display_name', 'name'),
+                'is_admin' => is_admin($position->id),
+            ] : 'No position found',
+            'organizations' => $orgData,
+            'admin_ids' => explode(',', env('ADMIN_ID', '')),
+        ]);
+    });
+    
     // Debug route to check hadafstrategies organization_id
     Route::get('/debug-hadafstrategies', function() {
         $all = \App\Models\Hadafstrategy::withoutGlobalScopes()->get(['id', 'name', 'organization_id']);
@@ -81,6 +117,73 @@ Route::middleware(['auth'])->group(function () {
             'success' => true,
             'message' => "Updated $updated records to organization $org_id",
             'updated_count' => $updated,
+        ]);
+    });
+    
+    // Assign all permissions to organization admins
+    Route::get('/fix-admin-permissions', function() {
+        $results = [];
+        
+        // Get all organizations
+        $organizations = \App\Models\Organization::all();
+        
+        foreach ($organizations as $org) {
+            // Get users with admin role in this organization
+            $adminUsers = $org->users()->wherePivot('role', 'admin')->get();
+            
+            foreach ($adminUsers as $user) {
+                // Find their employee position in this organization
+                $position = \App\Models\EmployeePosition::where('user_id', $user->id)
+                    ->where('organization_id', $org->id)
+                    ->first();
+                
+                // If no position in this org, try to find any position for this user
+                if (!$position) {
+                    $position = \App\Models\EmployeePosition::where('user_id', $user->id)->first();
+                    
+                    if ($position) {
+                        // Update the position's organization_id
+                        $position->organization_id = $org->id;
+                        $position->save();
+                        
+                        $results[] = [
+                            'organization' => $org->name,
+                            'user' => $user->name,
+                            'position_id' => $position->id,
+                            'action' => 'Updated position organization_id',
+                        ];
+                    }
+                }
+                
+                if ($position) {
+                    // Get all permissions
+                    $allPermissions = \App\Models\Permission::all();
+                    
+                    // Sync all permissions to this position
+                    $position->permissions()->sync($allPermissions->pluck('id'));
+                    
+                    $results[] = [
+                        'organization' => $org->name,
+                        'user' => $user->name,
+                        'position_id' => $position->id,
+                        'permissions_assigned' => $allPermissions->count(),
+                    ];
+                } else {
+                    $results[] = [
+                        'organization' => $org->name,
+                        'user' => $user->name,
+                        'user_id' => $user->id,
+                        'position_id' => null,
+                        'error' => 'No employee position found for this user at all',
+                    ];
+                }
+            }
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Admin permissions updated',
+            'results' => $results,
         ]);
     });
     
@@ -760,6 +863,8 @@ Route::group(['middleware' => 'checkUserId'], function () {
     Route::get('/hadafstrategies/{id}/edit', [HadafstrategyController::class, 'edit'])->name('hadafstrategies.edit')->middleware('permission:manage_strategic_goals');
 
     Route::resource('moasheradastrategy', '\App\Http\Controllers\MoasheradastrategyController')->middleware('permission:view_strategic_indicators');
+    Route::get('/moasheradastrategy/{id}/attach', [MoasheradastrategyController::class, 'attach'])->name('moasheradastrategy.attach')->middleware('permission:manage_strategic_indicators');
+    Route::post('/moasheradastrategy/{id}/attach', [MoasheradastrategyController::class, 'storeAttach'])->name('moasheradastrategy.storeAttach')->middleware('permission:manage_strategic_indicators');
 Route::get('/moasheradastrategy/{id}/edit', [MoasheradastrategyController::class, 'edit'])->name('Moasheradastrategy.edit')->middleware('permission:manage_strategic_indicators');
 Route::resource('moashermkmf', '\App\Http\Controllers\MoashermkmfController')->middleware('permission:view_efficiency_indicators');
 Route::resource('task', '\App\Http\Controllers\TaskController')->middleware('permission:view_main_tasks');

@@ -9,7 +9,7 @@ use App\Traits\BelongsToOrganization;
 class Moashermkmf extends Model
 {
     use HasFactory, BelongsToOrganization;
-    protected $fillable = ['id', 'percentage', 'name', 'parent_id','type'];
+    protected $fillable = ['id', 'percentage', 'name', 'parent_id','type', 'reached', 'target', 'calculation_type', 'the_vari', 'weight'];
 
     public function todos()
   {

@@ -98,14 +98,18 @@ $top_5_employees = array_slice($employee_scores, 0, 2000);
 
 
 
-$current_employee_id = current_user_position()->id;
+$currentPosition = current_user_position();
+$current_employee_id = $currentPosition ? $currentPosition->id : null;
 
-$current_employee_score = array_filter($employee_scores, function ($employee_score) use ($current_employee_id) {
-    return $employee_score['employeeid'] == $current_employee_id;
-});
+$current_employee_score = [];
+if ($current_employee_id) {
+    $current_employee_score = array_filter($employee_scores, function ($employee_score) use ($current_employee_id) {
+        return $employee_score['employeeid'] == $current_employee_id;
+    });
 
-// Since array_filter preserves array keys, you may want to reset the keys
-$current_employee_score = array_values($current_employee_score);
+    // Since array_filter preserves array keys, you may want to reset the keys
+    $current_employee_score = array_values($current_employee_score);
+}
 
 // Now you can access the employee_position and percentage
 if (!empty($current_employee_score)) {

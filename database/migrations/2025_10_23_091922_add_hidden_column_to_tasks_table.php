@@ -14,7 +14,9 @@ class AddHiddenColumnToTasksTable extends Migration
     public function up()
     {
         Schema::table('tasks', function (Blueprint $table) {
-            $table->tinyInteger('hidden')->default(0)->after('percentage');
+            if (!Schema::hasColumn('tasks', 'hidden')) {
+                $table->tinyInteger('hidden')->default(0)->after('percentage');
+            }
         });
     }
 

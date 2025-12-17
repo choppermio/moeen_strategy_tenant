@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Moasheradastrategy;
 use App\Models\Hadafstrategy;
+use App\Models\Moashermkmf;
 use Illuminate\Http\Request;
 
 class MoasheradastrategyController extends Controller
@@ -126,5 +127,35 @@ public function update(Request $request, $id)
     // Redirect the user back with a success message. Adjust the route as necessary.
     return redirect()->back()->with('success', 'Moasheradastrategy deleted successfully.');
 }
+
+    /**
+     * Show the form for attaching moashermkmf to moasheradastrategy.
+     */
+    public function attach($id)
+    {
+        $moasheradastrategy = Moasheradastrategy::findOrFail($id);
+        $moashermkmfs = Moashermkmf::all();
+        $attached_ids = $moasheradastrategy->moashermkmfs->pluck('id')->toArray();
+        
+        return view('moasheradastrategy.attach', compact('moasheradastrategy', 'moashermkmfs', 'attached_ids'));
+    }
+
+    /**
+     * Store the attachment of moashermkmf to moasheradastrategy.
+     */
+    public function storeAttach(Request $request, $id)
+    {
+        $request->validate([
+            'moashermkmfs' => 'required|array',
+            'moashermkmfs.*' => 'exists:moashermkmfs,id',
+        ]);
+
+        $moasheradastrategy = Moasheradastrategy::findOrFail($id);
+        
+        // Sync the selected moashermkmfs (this will remove unselected ones and add new ones)
+        $moasheradastrategy->moashermkmfs()->sync($request->moashermkmfs);
+        
+        return redirect()->route('moasheradastrategy.index')->with('success', 'تم ربط المؤشرات بنجاح!');
+    }
 
 }

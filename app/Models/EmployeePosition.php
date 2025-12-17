@@ -9,7 +9,9 @@ use App\Traits\BelongsToOrganization;
 class EmployeePosition extends Model
 {
     use HasFactory, BelongsToOrganization;
-    //protected $fillable = ['id', 'percentage', 'name', 'parent_id'];
+    
+    protected $fillable = ['user_id', 'name', 'organization_id'];
+    
     public function user() {
         return $this->belongsTo(User::class);
     }

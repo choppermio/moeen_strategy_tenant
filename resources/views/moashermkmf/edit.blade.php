@@ -46,6 +46,35 @@
         </div>
 
         <div class="form-group">
+            <label for="reached">المحقق:</label>
+            <input type="number" step="0.01" class="form-control" name="reached" value="{{ $moashermkmf->reached }}"/>
+        </div>
+
+        <div class="form-group">
+            <label for="target">المستهدف:</label>
+            <input type="number" step="0.01" class="form-control" name="target" value="{{ $moashermkmf->target }}"/>
+        </div>
+
+        <div class="form-group">
+            <label for="calculation_type">نوع الحساب:</label>
+            <select class="form-control" name="calculation_type">
+                <option value="">اختر نوع الحساب</option>
+                <option value="آلي" {{ $moashermkmf->calculation_type == 'آلي' ? 'selected' : '' }}>آلي</option>
+                <option value="يدوي" {{ $moashermkmf->calculation_type == 'يدوي' ? 'selected' : '' }}>يدوي</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="the_vari">المتغير:</label>
+            <input type="text" class="form-control" name="the_vari" value="{{ $moashermkmf->the_vari }}"/>
+        </div>
+
+        <div class="form-group">
+            <label for="weight">الوزن:</label>
+            <input type="number" step="0.01" class="form-control" name="weight" value="{{ $moashermkmf->weight }}"/>
+        </div>
+
+        <div class="form-group">
             <button class="btn btn-primary" type="submit">تحديث</button>
         </div>
     </form>

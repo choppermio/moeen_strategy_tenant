@@ -1,12 +1,24 @@
  @php
-    $current_user_id = current_user_position()->id;
+    $current_position = current_user_position();
+    $current_user_id = $current_position ? $current_position->id : null;
+    
+    // Check if user is an admin in any organization
+    $isOrgAdmin = auth()->user()->organizations()->wherePivot('role', 'admin')->exists();
+    $isCurrentOrgAdmin = auth()->user()->isOrganizationAdmin();
+    
+    if ($current_user_id) {
          $approved_tickets_count= \App\Models\Ticket::where('status','approved')->where('task_id',0)->where('to_id',$current_user_id)->orderBy('id', 'desc')->count();
          $needapproval_tickets_count= \App\Models\Ticket::where('status','pending')->where('to_id',$current_user_id)->orderBy('id', 'desc')->count();
        //if the current uesr has parent 
         $has_parent = \App\Models\EmployeePositionRelation::where('child_id', $current_user_id)->count() > 0;
+    } else {
+        $approved_tickets_count = 0;
+        $needapproval_tickets_count = 0;
+        $has_parent = false;
+    }
     @endphp
 
-@if(!isset(current_user_position()->id))
+@if(!$current_position && !$isOrgAdmin && !$isCurrentOrgAdmin)
 
 @dd('يجب تعيين لك دور من قبل مدير النظام')
 @endif
@@ -427,18 +439,18 @@ color:white !important;
                         <span>الهيكل التنظيمي</span></a>
                 </li>
             @endif
-            @if (has_permission('view_monthly_statistics'))
+            @if (has_permission('view_monthly_statistics') && $current_user_id)
             <li class="nav-item ">
                 <li class="nav-item {{ request()->is('subtask-analyst*') && request()->get('type') == 'month' ? 'bg-grain' : '' }}">
-                    <a class="nav-link" href="{{ url('/subtask-analyst?type=month&id='.date("m").'&department_id='.current_user_position()->id) }}&solo=true">
+                    <a class="nav-link" href="{{ url('/subtask-analyst?type=month&id='.date("m").'&department_id='.$current_user_id) }}&solo=true">
                         <i class="fas fa-fw fa-chart-bar"></i>
                         <span>احصائياتي الشهرية</span></a>
                 </li>
             @endif
-            @if (has_permission('view_yearly_statistics'))
+            @if (has_permission('view_yearly_statistics') && $current_user_id)
             <li class="nav-item ">
                 <li class="nav-item {{ request()->is('subtask-analyst*') && request()->get('type') == 'year' ? 'bg-grain' : '' }}">
-                    <a class="nav-link" href="{{ url('/subtask-analyst?type=year&id='.date("Y").'&department_id='.current_user_position()->id) }}&solo=true">
+                    <a class="nav-link" href="{{ url('/subtask-analyst?type=year&id='.date("Y").'&department_id='.$current_user_id) }}&solo=true">
                         <i class="fas fa-fw fa-chart-bar"></i>
                         <span>احصائياتي السنوية</span>
                     </a>
@@ -459,10 +471,10 @@ color:white !important;
                 التحكم
             </div>
             
-            @if (has_permission('view_my_team'))
+            @if (has_permission('view_my_team') && $current_user_id)
             <li class="nav-item ">
                 <li class="nav-item {{ request()->is('employeepositions/team/*') ? 'bg-grain' : '' }}">
-                    <a class="nav-link" href="{{ url('/employeepositions/team/'.current_user_position()->id )  }}">
+                    <a class="nav-link" href="{{ url('/employeepositions/team/'.$current_user_id )  }}">
                         <i class="fas fa-fw fa-users"></i>
                         <span>فريقي</span></a>
                 </li>
