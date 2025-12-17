@@ -345,6 +345,63 @@ if (!function_exists('calculatePercentages')) {
     }
 }
 
+if (!function_exists('calculateWeightedPercentages')) {
+    /**
+     * Calculate weighted percentages for all moasheradastrategy records
+     * This function updates the weighted_percentage field in moashermkmfs based on:
+     * - Achievement percentage: (reached / target) * 100
+     * - Weight of each moashermkmf
+     * 
+     * @return void
+     */
+    function calculateWeightedPercentages()
+    {
+        $moasherstrategys = Moasheradastrategy::all();
+        
+        foreach($moasherstrategys as $moasherstrategy) {
+            // Get all connected moashermkmf records
+            $moashermkmfs = $moasherstrategy->moashermkmfs;
+            
+            $totalWeight = 0;
+            $weightedSum = 0;
+            
+            // First pass: calculate total weight and weighted sum
+            foreach($moashermkmfs as $moashermkmf) {
+                $totalWeight += $moashermkmf->weight;
+            }
+            
+            // Second pass: calculate and update weighted percentage for each moashermkmf
+            foreach($moashermkmfs as $moashermkmf) {
+                // Calculate achievement percentage: (reached / target) * 100
+                $achievementPercentage = 0;
+                if($moashermkmf->target > 0) {
+                    $achievementPercentage = ($moashermkmf->reached / $moashermkmf->target) * 100;
+                }
+                
+                // Calculate contribution to the total weighted percentage
+                $contributionToTotal = 0;
+                if($totalWeight > 0) {
+                    $contributionToTotal = ($achievementPercentage * $moashermkmf->weight) / $totalWeight;
+                }
+                
+                $weightedSum += ($achievementPercentage * $moashermkmf->weight);
+                
+                // Update the moashermkmf weighted_percentage field
+                $moashermkmf->update(['weighted_percentage' => round($contributionToTotal, 2)]);
+            }
+            
+            // Calculate final weighted percentage for the moasherstrategy
+            $finalWeightedPercentage = 0;
+            if($totalWeight > 0) {
+                $finalWeightedPercentage = $weightedSum / $totalWeight;
+            }
+            
+            // Update moasherstrategy with the weighted percentage
+            $moasherstrategy->update(['percentage' => round($finalWeightedPercentage, 2)]);
+        }
+    }
+}
+
 if (!function_exists('is_admin')) {
     /**
      * Check if the given employee ID is in the admin list

@@ -1013,3 +1013,53 @@ Route::get('calnewstrategy', function () {
     
 });
 
+// Calculate weighted percentage for moasheradastrategy
+Route::get('/api/moasheradastrategy/weighted-percentage', function () {
+    // Calculate and update weighted percentages
+    calculateWeightedPercentages();
+    
+    // Return the updated data
+    $moasherstrategys = Moasheradastrategy::all();
+    $results = [];
+    
+    foreach($moasherstrategys as $moasherstrategy) {
+        $moashermkmfs = $moasherstrategy->moashermkmfs;
+        
+        $totalWeight = $moashermkmfs->sum('weight');
+        
+        $results[] = [
+            'id' => $moasherstrategy->id,
+            'name' => $moasherstrategy->name,
+            'percentage' => $moasherstrategy->percentage,
+            'weighted_percentage' => $moasherstrategy->percentage,
+            'total_weight' => $totalWeight,
+            'moashermkmfs_count' => $moashermkmfs->count(),
+            'moashermkmfs_details' => $moashermkmfs->map(function($mkmf) use ($totalWeight) {
+                $achievement = 0;
+                if($mkmf->target > 0) {
+                    $achievement = ($mkmf->reached / $mkmf->target) * 100;
+                }
+                
+                return [
+                    'id' => $mkmf->id,
+                    'reached' => $mkmf->reached,
+                    'target' => $mkmf->target,
+                    'weight' => $mkmf->weight,
+                    'weight_percentage' => $totalWeight > 0 ? round(($mkmf->weight / $totalWeight) * 100, 2) : 0,
+                    'percentage' => $mkmf->percentage,
+                    'achievement_percentage' => round($achievement, 2),
+                    'weighted_percentage' => $mkmf->weighted_percentage,
+                    'contribution_to_weighted_percentage' => $mkmf->weighted_percentage,
+                ];
+            })
+        ];
+    }
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Weighted percentages calculated and updated successfully',
+        'data' => $results,
+        'total_strategies' => $moasherstrategys->count(),
+    ]);
+})->middleware('auth');
+
