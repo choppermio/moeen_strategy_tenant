@@ -17,6 +17,7 @@
         <thead>
             <tr>
                 <th>الإسم</th>
+                <th>الوزن</th>
                 <th>الإجراء</th>
             </tr>
         </thead>
@@ -28,7 +29,9 @@
                     <a href="{{ route('moasheradastrategy.attach', $moasheradastrategy->id) }}" class="btn btn-sm btn-info ml-2">
                         <i class="fas fa-link"></i> ربط مؤشرات الكفاءة والفعالية
                     </a>
-                </td>                <td>
+                </td>
+                <td>{{ $moasheradastrategy->weight }}</td>
+                <td>
                     <div class="d-flex align-items-center">
                         <div class="progress progress-sm flex-grow-1 mr-2">
                             <div class="progress-bar 
@@ -51,7 +54,9 @@
                     <!--    @method('DELETE')-->
                     <!--    <button type="submit" class="btn btn-danger">حذف</button>-->
                     <!--</form>-->
-                                        @if (in_array(current_user_position()->id, explode(',', env('STRATEGY_CONTROL_ID'))))
+                                        @if (
+                                            in_array(current_user_position()->id, explode(',', env('STRATEGY_CONTROL_ID'))) 
+                                        )
 
                     <a href="{{ route('moasheradastrategy.edit', $moasheradastrategy->id) }}" class="btn btn-primary">تعديل</a>
                     @endif

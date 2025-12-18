@@ -18,6 +18,11 @@
 </div>
 
 <div class="form-group">
+<label for="weight">الوزن:</label>
+<input type="number" step="0.01" class="form-control" name="weight" value="0"/>
+</div>
+
+<div class="form-group">
     <label for="name">الهدف الإستراتيجي</label>
     <select name="hadafstrategy" class="form-control d-none" >
         @foreach ($hadafstrategies as $hadafstrategy)

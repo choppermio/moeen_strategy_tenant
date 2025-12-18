@@ -52,6 +52,7 @@ class MoasheradastrategyController extends Controller
         $moasheradastrategy = Moasheradastrategy::create([
             'name' => $request->input('name'),
             'percentage' => 0,
+            'weight' => $request->input('weight', 0),
             'parent_id' => $request->input('hadafstrategy'),
         ]);
         return redirect('/newstrategy?id='.$request->input('hadafstrategy'))->with('success', 'تم إضافة المؤشر بنجاح');
@@ -98,6 +99,7 @@ public function update(Request $request, $id)
     $validated = $request->validate([
         'name' => 'required|string|max:255', // Validate the name field
         'hadafstrategy' => 'required|exists:hadafstrategies,id', // Ensure the strategic goal exists
+        'weight' => 'nullable|numeric|min:0', // Validate weight field
     ]);
 
     // Find the existing strategic indicator by ID
@@ -106,6 +108,7 @@ public function update(Request $request, $id)
     // Update the indicator with validated data
     $moasheradastrategy->update([
         'name' => $validated['name'],
+        'weight' => $validated['weight'] ?? $moasheradastrategy->weight,
         'parent_id' => $validated['hadafstrategy'], // Make sure to use the correct column name
     ]);
 

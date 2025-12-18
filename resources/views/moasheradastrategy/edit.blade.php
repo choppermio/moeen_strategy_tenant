@@ -17,6 +17,11 @@
         </div>
 
         <div class="form-group">
+            <label for="weight">الوزن:</label>
+            <input type="number" step="0.01" class="form-control" name="weight" value="{{ $moasheradastrategy->weight }}"/>
+        </div>
+
+        <div class="form-group">
             <label for="name">الهدف الإستراتيجي:</label>
             <select name="hadafstrategy" class="form-control">
                 @foreach ($hadafstrategies as $hadafstrategy)

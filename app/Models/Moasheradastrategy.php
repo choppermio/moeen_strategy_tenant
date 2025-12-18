@@ -9,7 +9,7 @@ use App\Traits\BelongsToOrganization;
 class Moasheradastrategy extends Model
 {
     use HasFactory, BelongsToOrganization;
-    protected $fillable = ['id', 'percentage', 'name', 'parent_id','user_id'];
+    protected $fillable = ['id', 'percentage', 'weight', 'name', 'parent_id','user_id'];
 
     public function todos()
     {
