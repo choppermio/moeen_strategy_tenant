@@ -248,18 +248,32 @@ if (!function_exists('calculateWeightedPercentages')) {
             $weightedSum = 0;
             
             // First pass: calculate total weight and weighted sum
-            foreach($moashermkmfs as $moashermkmf) {
-                $totalWeight += $moashermkmf->weight;
-            }
+            $totalWeight = $moashermkmfs->sum('weight');
             
             // Second pass: calculate and update weighted percentage for each moashermkmf
             foreach($moashermkmfs as $moashermkmf) {
+                if($moashermkmf->type == 'tasks'){
+                   $moashermkmf->reached = $moashermkmf->tasks->sum('percentage') > 100 ?100:$moashermkmf->tasks->sum('percentage');
+                  
+                }
+                 if($moashermkmf->type == 'manual' || $moashermkmf->type == 'automatic' || $moashermkmf->type == 'tasks'){
+                // if($moashermkmf->type == 'يدوي'){
+                // $contributionToTotal = ($moashermkmf->percentage / 100) * $moashermkmf->target;
+                // $moashermkmf->update(['percentage' => round($contributionToTotal, 2)]);
+
+
+                // }
                 // Calculate achievement percentage: (reached / target) * 100
+                
+                //يدوي change in reached
+                //tasks average in percentage of 100
+                //automatic
+
                 $achievementPercentage = 0;
                 if($moashermkmf->target > 0) {
                     $achievementPercentage = ($moashermkmf->reached / $moashermkmf->target) * 100;
                 }
-                
+                 $achievementPercentage =  $achievementPercentage > 100 ? 100 : $achievementPercentage;
                 // Calculate contribution to the total weighted percentage
                 $contributionToTotal = 0;
                 if($totalWeight > 0) {
@@ -269,8 +283,9 @@ if (!function_exists('calculateWeightedPercentages')) {
                 $weightedSum += ($achievementPercentage * $moashermkmf->weight);
                 
                 
-                $moashermkmf->update(['percentage' => round($contributionToTotal, 2)]);
+                $moashermkmf->update(['percentage' => round($achievementPercentage, 2)]);
                 $moashermkmf->update(['weighted_percentage' => round($contributionToTotal, 2)]);
+            }
             }
             
             // Calculate final weighted percentage for the moasherstrategy
@@ -422,22 +437,22 @@ if (!function_exists('calculatePercentages')) {
 
 
     //////////////////percentage of moasherstrategy/////////////////////
-    //get all moasherstrategy
-    $moasherstrategys = 	Moasheradastrategy::all();
-    foreach($moasherstrategys as $moasherstrategy)
-    {
-        $moasherstrategy_mubadaras_count = $moasherstrategy->mobadaras->count();
-        $moasherstrategy_mubadaras_sum = $moasherstrategy->mobadaras->sum('percentage');
-        // dd($moasherstrategy_mubadaras_sum);
-        if($moasherstrategy_mubadaras_sum !=0){
-        $moasherstrategy_average = $moasherstrategy_mubadaras_sum / $moasherstrategy_mubadaras_count;
-        }else{
-            $moasherstrategy_average = 0;
-        }
-        $moasherstrategy->update(['percentage' => $moasherstrategy_average]);
-    }
+    // //get all moasherstrategy
+    // $moasherstrategys = 	Moasheradastrategy::all();
+    // foreach($moasherstrategys as $moasherstrategy)
+    // {
+    //     $moasherstrategy_mubadaras_count = $moasherstrategy->mobadaras->count();
+    //     $moasherstrategy_mubadaras_sum = $moasherstrategy->mobadaras->sum('percentage');
+    //     // dd($moasherstrategy_mubadaras_sum);
+    //     if($moasherstrategy_mubadaras_sum !=0){
+    //     $moasherstrategy_average = $moasherstrategy_mubadaras_sum / $moasherstrategy_mubadaras_count;
+    //     }else{
+    //         $moasherstrategy_average = 0;
+    //     }
+    //     $moasherstrategy->update(['percentage' => $moasherstrategy_average]);
+    // }
 
-
+    calculateWeightedPercentages();
 
 
 
