@@ -141,7 +141,7 @@
     <label for="name">مؤشرات الكفاءة والفعالية</label>
     <select class="selectpicker" multiple data-live-search="true" name="moashermkmfs[]">
         @foreach ($moashermkmfs as $moashermkmf)
-            <option value="{{ $moashermkmf->id }}" @if(in_array($moashermkmf->id, $task->moashermkmfs->pluck('id')->toArray())) selected @endif>{{ $moashermkmf->name }}</option>
+            <option value="{{ $moashermkmf->id }}" @if($moashermkmf->calculation_type !='tasks') disabled @endif @if(in_array($moashermkmf->id, $task->moashermkmfs->pluck('id')->toArray())) selected @endif>{{ $moashermkmf->name }}</option>
         @endforeach
     </select>
 </div>

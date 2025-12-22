@@ -210,11 +210,11 @@
                     @foreach($items as $item)
                   
                     <tr>
-                        <td >{{ $item->name }}
+                        <td >{{ $item->name }} ({{ $item->weight }} %)
                         
                      
                         </td> <!-- Assuming 'name' is the field you want to display -->
-                        {{--<td> ( {{ \App\Models\EmployeePosition::where('id',$item->user_id)->first()->name ?? }} )</td>--}}
+                        {{--<td> ( {{ \App\Models\EmployeePosition::where('id',$item->user_id)->first()->name ?? }} ) ({{ $item->weight }} %)</td>--}}
                         </tr>
                     @endforeach
                 </table>
@@ -254,10 +254,11 @@
                     <!--    @method('DELETE')-->
                     <!--    <button type="submit" class="btn btn-danger">حذف</button>-->
                     <!--</form>-->
-                    @if (in_array(current_user_position()->id, explode(',', env('STRATEGY_CONTROL_ID'))))
-                    <a href="{{ route('hadafstrategies.edit', $strategy->id) }}" class="btn btn-primary">تعديل</a>
+                    @if (in_array(current_user_position()->id, explode(',', env('STRATEGY_CONTROL_ID'))) || auth()->id() === 81)
+                    <a href="{{ route('hadafstrategies.edit', $strategy->id) }}" class="btn btn-primary btn-sm mb-1">تعديل</a>
+                    <a href="{{ route('hadafstrategy.weights', $strategy->id) }}" class="btn btn-info btn-sm mb-1">إدارة الأوزان</a>
                     @endif
-                    <a href="newstrategy?id={{ $strategy->id }}" class="btn btn-primary">عرض</a>
+                    <a href="newstrategy?id={{ $strategy->id }}" class="btn btn-primary btn-sm mb-1">عرض</a>
 
                 </td>
                 

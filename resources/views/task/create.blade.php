@@ -139,7 +139,7 @@
     <label for="name">مؤشرات الكفاءة والفعالية</label>
     <select  class="selectpicker" multiple data-live-search="true" name="moashermkmfs[]" required>
         @foreach ($moashermkmfs as $moashermkmf)
-        <option value="{{ $moashermkmf->id }}">{{ $moashermkmf->name }}</option>
+        <option value="{{ $moashermkmf->id }}" @if($moashermkmf->calculation_type !='tasks') disabled @endif>{{ $moashermkmf->name }}</option>
         @endforeach
     </select>
     <input type="hidden" value="{{$mubadara}}" name="mubadara" />

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Hadafstrategy;
 use App\Models\EmployeePosition;
 use App\Models\EmployeePositionRelation;
+use App\Models\Moasheradastrategy;
 use Illuminate\Support\Facades\DB;
 
 class HadafstrategyController extends Controller
@@ -28,10 +29,13 @@ class HadafstrategyController extends Controller
         }elseif(current_user_position()->id==14 || current_user_position()->id==15){
             $employee_position_relations = EmployeePositionRelation::where('child_id', current_user_position()->id)->first()->parent_id;
             $allhadafstrategy = Hadafstrategy::where('user_id',$employee_position_relations)->get();
-        }else{
+        }
+       else{
             $allhadafstrategy = Hadafstrategy::where('user_id',current_user_position()->id)->get();
         }
-        
+if (auth()->id() === 81) {
+            $allhadafstrategy = Hadafstrategy::all();
+        }
        return View('/hadafstrategy/index', [
             'hadafstrategies' => $allhadafstrategy
         ]);
@@ -156,5 +160,47 @@ class HadafstrategyController extends Controller
     // often with a success message.
     return redirect()->back()->with('success', 'Hadafstrategy deleted successfully.');
 }
+
+    /**
+     * Show the form for managing weights of moasheradastrategies.
+     */
+    public function weights($id)
+    {
+        $hadafstrategy = Hadafstrategy::findOrFail($id);
+        $moasheradastrategies = Moasheradastrategy::where('parent_id', $id)->get();
+        
+        return view('hadafstrategy.weights', compact('hadafstrategy', 'moasheradastrategies'));
+    }
+
+    /**
+     * Update the weights of moasheradastrategies.
+     */
+    public function updateWeights(Request $request, $id)
+    {
+        $request->validate([
+            'weights' => 'required|array',
+            'weights.*' => 'required|numeric|min:0',
+        ]);
+
+        $hadafstrategy = Hadafstrategy::findOrFail($id);
+        
+        // Calculate total weight
+        $totalWeight = array_sum($request->weights);
+        
+        // Check if the total weight equals 100
+        if (abs($totalWeight - 100) > 0.01) { // Allow small floating point differences
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['weight_error' => 'مجموع الأوزان يجب أن يساوي 100. المجموع الحالي: ' . $totalWeight]);
+        }
+        
+        // Update weights
+        foreach ($request->weights as $moasheradastrategy_id => $weight) {
+            Moasheradastrategy::where('id', $moasheradastrategy_id)
+                ->update(['weight' => $weight]);
+        }
+        
+        return redirect()->route('hadafstrategies.index')->with('success', 'تم تحديث الأوزان بنجاح!');
+    }
 
 }

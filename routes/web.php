@@ -861,6 +861,10 @@ Route::group(['middleware' => 'checkUserId'], function () {
     Route::get('/send-notification', [SubtaskController::class, 'sendNotification']);
 
     Route::get('/hadafstrategies/{id}/edit', [HadafstrategyController::class, 'edit'])->name('hadafstrategies.edit')->middleware('permission:manage_strategic_goals');
+    
+    // Manage weights for moasheradastrategies under hadafstrategy
+    Route::get('/hadafstrategy/{id}/weights', [HadafstrategyController::class, 'weights'])->name('hadafstrategy.weights')->middleware('permission:manage_strategic_goals');
+    Route::put('/hadafstrategy/{id}/weights', [HadafstrategyController::class, 'updateWeights'])->name('hadafstrategy.updateWeights')->middleware('permission:manage_strategic_goals');
 
     Route::resource('moasheradastrategy', '\App\Http\Controllers\MoasheradastrategyController')->middleware('permission:view_strategic_indicators');
     Route::get('/moasheradastrategy/{id}/attach', [MoasheradastrategyController::class, 'attach'])->name('moasheradastrategy.attach')->middleware('permission:manage_strategic_indicators');

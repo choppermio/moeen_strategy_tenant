@@ -45,17 +45,28 @@ class MoashermkmfController extends Controller
      */
     public function store(Request $request)
     {
-        $moashermkmf = Moashermkmf::create([
+        $data = [
             'name' => $request->input('name'),
             'percentage' => 0,
             'parent_id' => $request->input('mubadara'),
             'type' => $request->input('type'),
-            'reached' => $request->input('reached'),
             'target' => $request->input('target'),
             'calculation_type' => $request->input('calculation_type'),
             'the_vari' => $request->input('the_vari'),
             'weight' => $request->input('weight'),
-        ]);
+        ];
+        
+        // Only allow reached to be set if calculation_type is manual
+        if ($request->input('calculation_type') === 'manual') {
+            $data['reached'] = $request->input('reached');
+        }
+        
+        // Only allow calculation_variable to be set if calculation_type is automatic
+        if ($request->input('calculation_type') === 'automatic') {
+            $data['calculation_variable'] = $request->input('calculation_variable');
+        }
+        
+        $moashermkmf = Moashermkmf::create($data);
         return redirect()->back()->with('success', 'تم إضافة الهدف بنجاح');
     }
 
@@ -79,7 +90,7 @@ class MoashermkmfController extends Controller
    // Edit method
 public function edit($id)
 {
-    $moashermkmf = MoasherMkmf::findOrFail($id);
+    $moashermkmf = Moashermkmf::findOrFail($id);
     $mubadaras = Mubadara::all(); // Assuming you have a Mubadara model for the initiatives
     return view('moashermkmf.edit', compact('moashermkmf', 'mubadaras'));
 }
@@ -93,17 +104,29 @@ public function update(Request $request, $id)
         'type' => 'required|in:mk,mf',
     ]);
 
-    $moashermkmf = MoasherMkmf::findOrFail($id);
-    $moashermkmf->update([
+    $moashermkmf = Moashermkmf::findOrFail($id);
+    
+    $updateData = [
         'name' => $validatedData['name'],
         // 'parent_id' => $validatedData['mubadara'], // Assuming 'mubadara_id' is the foreign key column
         'type' => $validatedData['type'],
-        'reached' => $request->input('reached'),
         'target' => $request->input('target'),
         'calculation_type' => $request->input('calculation_type'),
         'the_vari' => $request->input('the_vari'),
         'weight' => $request->input('weight'),
-    ]);
+    ];
+    
+    // Only allow reached to be updated if calculation_type is manual
+    if ($request->input('calculation_type') === 'manual') {
+        $updateData['reached'] = $request->input('reached');
+    }
+    
+    // Only allow calculation_variable to be updated if calculation_type is automatic
+    if ($request->input('calculation_type') === 'automatic') {
+        $updateData['calculation_variable'] = $request->input('calculation_variable');
+    }
+    
+    $moashermkmf->update($updateData);
 
     return redirect()->route('moashermkmf.index')->with('success', 'Updated successfully!');
 }

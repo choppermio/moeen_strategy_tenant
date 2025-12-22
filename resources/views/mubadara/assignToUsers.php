@@ -29,7 +29,7 @@
                 <td>{{ $mubadara->percentage }} %</td>
                 @php
                 @endphp
-                <td>{{ \App\Models\EmployeePosition::where('id',$mubadara->user_id)->first()->name }} </td>
+                <td>{{ \App\Models\EmployeePosition::where('id',$mubadara->user_id)->first()->name ?? '' }}  </td>
                 <td>
                     <form action="{{ route('hadafstrategies.destroy', $mubadara->id) }}" method="POST" style="display: inline">
                         @csrf

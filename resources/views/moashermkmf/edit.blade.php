@@ -47,7 +47,7 @@
 
         <div class="form-group">
             <label for="reached">المحقق:</label>
-            <input type="number" step="0.01" class="form-control" name="reached" value="{{ $moashermkmf->reached }}"/>
+            <input type="number" step="0.01" class="form-control" name="reached" id="reached" value="{{ $moashermkmf->reached }}"/>
         </div>
 
         <div class="form-group">
@@ -57,14 +57,15 @@
 
         <div class="form-group">
             <label for="calculation_type">نوع الحساب:</label>
-            <select class="form-control" name="calculation_type">
+            <select class="form-control" name="calculation_type" id="calculation_type">
                 <option value="">اختر نوع الحساب</option>
-                <option value="آلي" {{ $moashermkmf->calculation_type == 'آلي' ? 'selected' : '' }}>آلي</option>
-                <option value="يدوي" {{ $moashermkmf->calculation_type == 'يدوي' ? 'selected' : '' }}>يدوي</option>
+                <option value="automatic" {{ $moashermkmf->calculation_type == 'automatic' ? 'selected' : '' }}>آلي</option>
+                <option value="manual" {{ $moashermkmf->calculation_type == 'manual' ? 'selected' : '' }}>يدوي</option>
+                <option value="tasks" {{ $moashermkmf->calculation_type == 'tasks' ? 'selected' : '' }}>مهام</option>
             </select>
         </div>
 
-        <div class="form-group">
+        <div class="form-group d-none">
             <label for="the_vari">المتغير:</label>
             <input type="text" class="form-control" name="the_vari" value="{{ $moashermkmf->the_vari }}"/>
         </div>
@@ -74,9 +75,51 @@
             <input type="number" step="0.01" class="form-control" name="weight" value="{{ $moashermkmf->weight }}"/>
         </div>
 
+        <div class="form-group" id="calculation_variable_group">
+            <label for="calculation_variable">متغير الحساب:</label>
+            <input type="text" class="form-control" name="calculation_variable" id="calculation_variable" value="{{ $moashermkmf->calculation_variable }}"/>
+        </div>
+
         <div class="form-group">
             <button class="btn btn-primary" type="submit">تحديث</button>
         </div>
     </form>
 </div>
+
+@push('scripts')
+<script>
+// Handle calculation_type change
+$(document).ready(function() {
+    $('#calculation_type').on('change', function() {
+        var calculationType = $(this).val();
+        var reachedField = $('#reached');
+        var calculationVariableGroup = $('#calculation_variable_group');
+        
+        if (calculationType === 'automatic') {
+            // Show calculation_variable, disable reached
+            calculationVariableGroup.show();
+            reachedField.prop('disabled', true);
+        } else if (calculationType === 'manual') {
+            // Hide calculation_variable, enable reached
+            calculationVariableGroup.hide();
+            $('#calculation_variable').val('');
+            reachedField.prop('disabled', false);
+        } else if (calculationType === 'tasks') {
+            // Hide calculation_variable, disable reached
+            calculationVariableGroup.hide();
+            $('#calculation_variable').val('');
+            reachedField.prop('disabled', true);
+        } else {
+            // Default: hide calculation_variable, enable reached
+            calculationVariableGroup.hide();
+            reachedField.prop('disabled', false);
+        }
+    });
+    
+    // Trigger on page load to set initial state
+    $('#calculation_type').trigger('change');
+});
+</script>
+@endpush
+
 @endsection
