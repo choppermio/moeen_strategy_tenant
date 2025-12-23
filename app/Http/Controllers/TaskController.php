@@ -24,7 +24,8 @@ class TaskController extends Controller
     public function getTasksByUserId(Request $request)
     {
         // return  $userId->count();
-        $userId = $request->user_id[0];
+        $userId = $request->user_id;
+        // dd($userId);
         // return $userId;
         // return  count($userId);
 

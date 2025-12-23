@@ -285,9 +285,9 @@
         var userId = $('#to_id').val(); // Get selected user ID
         if (new URLSearchParams(window.location.search).has('myself')) {
             $.ajax({
-                url: '{{ env("APP_URL", "") }}get-tasks', // Laravel route
+                url: '{{ env("APP_URL", "") }}/get-tasks', // Laravel route
                 type: 'GET',
-                data: { user_id: userId },
+                data: { user_id: userId.replace('%5B%5D', '') },
                 success: function(response) {
                     console.log(response)
                     $('#tasks-container').html(response); // Update tasks container with response
@@ -322,9 +322,9 @@ console.log(selectedOptions);
             console.log(userId);
     
             $.ajax({
-                url: '{{ env("APP_URL", "") }}get-tasks', // Laravel route
+                url: '{{ env("APP_URL", "") }}/get-tasks', // Laravel route
                 type: 'GET',
-                data: { user_id: userId },
+                data: { user_id: userId[0] },
                 success: function(response) {
                     console.log(response)
                     $('#tasks-container').html(response); // Update tasks container with response

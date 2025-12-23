@@ -89,6 +89,7 @@ if(!isset($_GET['id'])){
         <thead>
             <tr>
                 <th>المؤشر</th>
+                <th>الوزن</th>
                 <th>نسبة الإكتمال</th>
             </tr>
         </thead>
@@ -96,6 +97,7 @@ if(!isset($_GET['id'])){
             @foreach ($mobadara_list->moasheradastrategies as $moasheradastrategy)
                 <tr>
                     <td>{{ $moasheradastrategy->name }}</td>
+                    <td>%{{ $moasheradastrategy->weight }}</td>
                     <td><span class="badge badge-success">{{ $moasheradastrategy->percentage }}%</span></td>
                 </tr>
             @endforeach
@@ -176,6 +178,7 @@ $uniquetasks = array_values($uniqueTasks);
                 <thead>
                     <tr>
                         <th>المؤشر</th>
+                        <th>الوزن</th>
                         <th>النسبة</th>
                     </tr>
                 </thead>
@@ -183,6 +186,7 @@ $uniquetasks = array_values($uniqueTasks);
                     @foreach ($uniquetask->moashermkmfs as $taskmkmf)
                         <tr>
                             <td>{{ $taskmkmf->name }}**</td>
+                            <td>%{{ $taskmkmf->weight }}</td>
                             @if (in_array(current_user_position()->id, explode(',', env('STRATEGY_CONTROL_ID'))))
                                 <td>
                                     <span class="badge badge-info">{{ $taskmkmf->percentage }}%</span>

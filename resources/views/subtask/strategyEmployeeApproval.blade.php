@@ -1,9 +1,5 @@
 @extends('layouts.admin')
 @php
-
-@endphp
-
-@php
 // // $k = \App\Models\Todo::find(10)->moashermkmfs;
 // dd($k);
 
@@ -48,26 +44,26 @@ $user_id  = auth()->user()->id;
                 <th>تصحيح الإجراء</th>
                 <th>الإجراء</th>
             </tr>
-        </thead>
-        <tbody>
+                            $task = \App\Models\Task::find($subtask->parent_id);
+                            $mubadara_info = \App\Models\Mubadara::find($task->parent_id ?? null);
        
             @foreach ($subtasks as $subtask)
             <tr>
                 @php
                 $task = \App\Models\Task::where('id',$subtask->parent_id)->first();
                 @endphp
-                <td>{{ $subtask->name }}</td>
-                <td>{{ \App\Models\EmployeePosition::where('id', $subtask->user_id)->first()->name }}</td>
-                <td>{{ $task->name }} ({{\App\Models\EmployeePosition::where('id',$task->user_id)->first()->name}})</td>
+                            <td>{{ $subtask->name }}</td>
+                <td>{{ \App\Models\EmployeePosition::find($subtask->user_id)?->name ?? 'غير محدد' }}</td>
+                <td>{{ $task->name }} ({{ \App\Models\EmployeePosition::find($task->user_id)?->name ?? 'غير محدد' }})</td>
                 <td>
                 {{ $task->output }}
                 </td>
                 @php
-                $mubadara_info = \App\Models\Mubadara::where('id',$task->parent_id)->first();
+                $mubadara_info = \App\Models\Mubadara::find($task->parent_id);
                 @endphp
-                <td>{{$mubadara_info->name}} ({{\App\Models\EmployeePosition::where('id',$mubadara_info->user_id)->first()->name}})</td>
+                <td>{{ $mubadara_info->name ?? 'غير محدد' }} ({{ \App\Models\EmployeePosition::find($mubadara_info->user_id)?->name ?? 'غير محدد' }})</td>
                 <td>{{ $subtask->percentage }} %</td>
-                <td> <a href="{{ url(env('APP_URL_REAL').'/mysubtasks-evidence/'.$subtask->id) }}" class="btn btn-info" target="_blank">الشواهد</a></td>
+                <td> <a href="{{ url((env('APP_URL_REAL') ?: '') . '/mysubtasks-evidence/' . $subtask->id) }}" class="btn btn-info" target="_blank">الشواهد</a></td>
                 <td>{{ $task->output }}</td>
 
         <td>
@@ -187,8 +183,8 @@ $user_id  = auth()->user()->id;
                     @foreach ($subtasks as $subtask)
                         @php
                             $task = \App\Models\Task::where('id', $subtask->parent_id)->first();
+                            $mubadara_info = \App\Models\Mubadara::where('id', $task->parent_id)->first();
                             
-                                $mubadara_info = \App\Models\Mubadara::where('id', $task->parent_id)->first();
                             
                         @endphp
                         <tr class="aa{{ $subtask->id }}" data-subtask-id="{{ $subtask->id }}">
@@ -197,18 +193,21 @@ $user_id  = auth()->user()->id;
                             <td>{{ $subtask->name }}
                 
                        <div>
-                             <span class="badge badge-secondary">مبادرة : {{ $mubadara_info->name }} ({{ \App\Models\EmployeePosition::where('id', $mubadara_info->user_id)->first()->name }})</span>
-                            <span class="badge badge-info">الإجراء الرئيسي : {{ $task->name }} ({{ \App\Models\EmployeePosition::where('id', $task->user_id)->first()->name }}) </span>
+                            <span class="badge badge-secondary">مبادرة : {{ $mubadara_info->name ?? 'غير محدد' }} 
+                                ( {{ \App\Models\EmployeePosition::find($mubadara_info->user_id)?->name ?? 'غير محدد' }} )
+                            </span>
+                            <span class="badge badge-info">الإجراء الرئيسي : {{ $task->name }} ({{ \App\Models\EmployeePosition::find($task->user_id)?->name ?? 'غير محدد' }}) </span>
                             <span class="badge badge-primary">مخرج الإجراء : {{ $task->output }}</span>
                         
                         </div>
                         
                         </td>
-                                                                        <td>{{ \App\Models\EmployeePosition::where('id', $subtask->user_id)->first()->name }}</td>
+                                                                        <td>{{ \App\Models\EmployeePosition::find($subtask->user_id)?->name ?? 'غير محدد' }}</td>
 
                             <td>
                                 @php
-                                    $note =  \App\Models\Ticket::where('id',$subtask->ticket_id)->first()->note;
+                                    $ticketObj = \App\Models\Ticket::find($subtask->ticket_id);
+                                    $note = $ticketObj->note ?? '';
                                     $uniqueId =  $subtask->ticket_id;
                                 @endphp
                                 <div style="width:200px;">
@@ -236,7 +235,7 @@ $user_id  = auth()->user()->id;
                                     <button class="btn btn-sm btn-secondary cancel-percentage">إلغاء</button>
                                 </div>
                             </td>
-                            <td><a href="{{ url(env('APP_URL_REAL') . '/mysubtasks-evidence/' . $subtask->id) }}" class="btn btn-info" target="_blank">الشواهد</a></td>
+                            <td><a href="{{ url((env('APP_URL_REAL') ?: '') . '/mysubtasks-evidence/' . $subtask->id) }}" class="btn btn-info" target="_blank">الشواهد</a></td>
                             <td>{{ $task->output }}</td>
 
 
@@ -395,7 +394,7 @@ $user_id  = auth()->user()->id;
 
 
 
-                            <td><a href="{{ url(env('APP_URL_REAL') . '/ticketsshow/' . $subtask->ticket_id) }}" target="_blank">عرض</a></td>
+                            <td><a href="{{ url((env('APP_URL_REAL') ?: '') . '/ticketsshow/' . $subtask->ticket_id) }}" target="_blank">عرض</a></td>
     
       <td>
                                 @if($admin == 1)
@@ -482,17 +481,18 @@ $task = \App\Models\Task::where('id', $subtask->parent_id)->first();
 @endphp
                         <tr>
                             <td>{{ $subtask->name }}
-                              <div>  <span class="badge badge-secondary">مبادرة : {{ $mubadara_info->name }} ({{ \App\Models\EmployeePosition::where('id', $mubadara_info->user_id)->first()->name }})</span>
-                                <span class="badge badge-info">الإجراء الرئيسي : {{ $task->name }} ({{ \App\Models\EmployeePosition::where('id', $task->user_id)->first()->name }}) </span>
+                                                            <div>  <span class="badge badge-secondary">مبادرة : {{ $mubadara_info->name ?? 'غير محدد' }} ({{ \App\Models\EmployeePosition::find($mubadara_info->user_id)?->name ?? 'غير محدد' }})</span>
+                                                                <span class="badge badge-info">الإجراء الرئيسي : {{ $task->name }} ({{ \App\Models\EmployeePosition::find($task->user_id)?->name ?? 'غير محدد' }}) </span>
                                 <span class="badge badge-primary">مخرج الإجراء:({{$task->output}})</span>
                             </div>
                             
                             </td>
-                                            <td>{{ \App\Models\EmployeePosition::where('id', $subtask->user_id)->first()->name }}</td>
+                                            <td>{{ \App\Models\EmployeePosition::find($subtask->user_id)?->name ?? 'غير محدد' }}</td>
                 
                                 <td>
                                     @php
-                                        $note =  \App\Models\Ticket::where('id',$subtask->ticket_id)->first()->note;
+                                        $ticketObj = \App\Models\Ticket::find($subtask->ticket_id);
+                                        $note = $ticketObj->note ?? '';
                                         $uniqueId =  $subtask->ticket_id;
                                     @endphp
                                     <div style="width:200px;">
@@ -511,7 +511,7 @@ $task = \App\Models\Task::where('id', $subtask->parent_id)->first();
                            <td>{{$task->name}}</td>
                            <td>{{$task->output}}</td>
                             <td>{{ $subtask->percentage }} %</td>
-                            <td><a href="{{ url(env('APP_URL_REAL') . '/mysubtasks-evidence/' . $subtask->id) }}" class="btn btn-info" target="_blank">الشواهد</a></td>
+                            <td><a href="{{ url((env('APP_URL_REAL') ?: '') . '/mysubtasks-evidence/' . $subtask->id) }}" class="btn btn-info" target="_blank">الشواهد</a></td>
                             <td>
                              
                             </td>
@@ -552,17 +552,18 @@ $task = \App\Models\Task::where('id', $subtask->parent_id)->first();
                            
                             <td>{{ $subtask->name }}
                                 <div>
-                                <span class="badge badge-secondary">مبادرة : {{ $mubadara_info->name }} ({{ \App\Models\EmployeePosition::where('id', $mubadara_info->user_id)->first()->name }})</span>
-                                <span class="badge badge-info">الإجراء الرئيسي : {{ $task->name }} ({{ \App\Models\EmployeePosition::where('id', $task->user_id)->first()->name }})</span>
+                                <span class="badge badge-secondary">مبادرة : {{ $mubadara_info->name ?? 'غير محدد' }} ({{ \App\Models\EmployeePosition::find($mubadara_info->user_id)?->name ?? 'غير محدد' }})</span>
+                                <span class="badge badge-info">الإجراء الرئيسي : {{ $task->name }} ({{ \App\Models\EmployeePosition::find($task->user_id)?->name ?? 'غير محدد' }})</span>
                                 <span class="badge badge-primary">مخرج الإجراء : {{ $task->output }}</span>
                                
                             </div>
                             </td>
-                                            <td>{{ \App\Models\EmployeePosition::where('id', $subtask->user_id)->first()->name }}</td>
+                                            <td>{{ \App\Models\EmployeePosition::find($subtask->user_id)?->name ?? 'غير محدد' }}</td>
                 
                                 <td>
                                     @php
-                                        $note =  \App\Models\Ticket::where('id',$subtask->ticket_id)->first()->note;
+                                        $ticketObj = \App\Models\Ticket::find($subtask->ticket_id);
+                                        $note = $ticketObj->note ?? '';
                                         $uniqueId =  $subtask->ticket_id;
                                     @endphp
                                     <div style="width:200px;">
@@ -582,7 +583,7 @@ $task = \App\Models\Task::where('id', $subtask->parent_id)->first();
 
                           
                             <td>{{ $subtask->percentage }} %</td>
-                            <td><a href="{{ url(env('APP_URL_REAL') . '/mysubtasks-evidence/' . $subtask->id) }}" class="btn btn-info" target="_blank">الشواهد</a></td>
+                            <td><a href="{{ url((env('APP_URL_REAL') ?: '') . '/mysubtasks-evidence/' . $subtask->id) }}" class="btn btn-info" target="_blank">الشواهد</a></td>
                             <td>{{ $task->output }}</td>
                             <td>
                                

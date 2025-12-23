@@ -1000,10 +1000,12 @@ public function subtaskattachment(Subtask $subtask, Request $request)
         // dd(Subtask::where('status','=','pending-approval')->where('parent_user_id',EmployeePosition::where('id',auth()->id())->first()->id)->get());
         // dd(Subtask::where('status','=','pending-approval')->where('parent_user_id',EmployeePosition::where('id',auth()->id())->first()->id)->get());
         // dd(Subtask::where('status','=','pending-approval')->get());
-        $employeePositionId = EmployeePosition::where('id', auth()->id())->first()->id ?? null;
+        $employeePositionId = current_user_position()->id;
+// dd(current_user_position()->id);
         $subtasks = Subtask::whereIn('status', ['rejected', 'pending-approval'])
         ->where('parent_user_id', $employeePositionId)
         ->get();
+        // dd($subtasks);
         return View('/subtask/approval', [
             'subtasks' =>  $subtasks,
         ]);    

@@ -43,6 +43,8 @@
             if ($task) {
                 $mubadara = \App\Models\Mubadara::where('id', $task->parent_id)->first();
             }
+            // Preload ticket safely to avoid attempting to read properties on null
+            $ticket = \App\Models\Ticket::find($subtask->ticket_id);
         @endphp
         <tr>
             <td data-content="رقم المهمة">{{ $subtask->ticket_id }}</td>
@@ -71,7 +73,8 @@
                 
                 <div style="width:200px;">
                     @php
-                    $note = \App\Models\Ticket::where('id',$subtask->ticket_id)->first()->note ?? '';
+                    // Use preloaded $ticket (may be null)
+                    $note = $ticket->note ?? '';
                     $uniqueId =  $subtask->ticket_id;
                     @endphp
                     <div id="shortNote_{{ $uniqueId }}" class="collapse show">
@@ -93,10 +96,12 @@
                 </td>
                 
                 <td>
-                @php
-                        $ticket = \App\Models\Ticket::where('id', $subtask->ticket_id)->first();
-                        if(isset($ticket->from_id)){
-                            $from  =   \App\Models\EmployeePosition::where('id',$ticket->from_id)->first()->name  ;
+                    @php
+                        // $ticket may already be preloaded above; ensure we have it
+                        $ticket = $ticket ?? \App\Models\Ticket::find($subtask->ticket_id);
+                        if(isset($ticket->from_id) && $ticket->from_id != null){
+                            $fromModel = \App\Models\EmployeePosition::find($ticket->from_id);
+                            $from = $fromModel->name ?? '';
                         }
                      
                     @endphp
@@ -183,7 +188,9 @@ echo $dateTimeIn12HourFormat;
                     </div>
                 </div>
             </td>
-            <td data-content="التحديثات"><a href="{{ url(env('APP_URL_REAL')) }}/ticketsshow/{{ $subtask->ticket_id }}" target="_blank">عرض</a></td>
+            <td data-content="التحديثات">
+                <a href="{{ url((env('APP_URL_REAL') ?: '') . '/ticketsshow/' . $subtask->ticket_id) }}" target="_blank">عرض</a>
+            </td>
             <td data-content="إجراء">
             
             @if($subtask->user_id != current_user_position()->id)

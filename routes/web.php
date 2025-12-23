@@ -1067,3 +1067,7 @@ Route::get('/api/moasheradastrategy/weighted-percentage', function () {
     ]);
 })->middleware('auth');
 
+Route::get('calculate-percentages', function () {
+    calculatePercentages();
+    return "Percentages calculated and updated successfully.";
+})->middleware('auth');

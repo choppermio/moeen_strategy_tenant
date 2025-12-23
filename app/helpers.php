@@ -243,7 +243,6 @@ if (!function_exists('calculateWeightedPercentages')) {
         foreach($moasherstrategys as $moasherstrategy) {
             // Get all connected moashermkmf records
             $moashermkmfs = $moasherstrategy->moashermkmfs;
-            
             $totalWeight = 0;
             $weightedSum = 0;
             
@@ -252,11 +251,14 @@ if (!function_exists('calculateWeightedPercentages')) {
             
             // Second pass: calculate and update weighted percentage for each moashermkmf
             foreach($moashermkmfs as $moashermkmf) {
-                if($moashermkmf->type == 'tasks'){
+                                // echo 'Moasher MKMF ID: ' . $moashermkmf->id .'<br />';
+
+                if($moashermkmf->calculation_type == 'tasks'){
                    $moashermkmf->reached = $moashermkmf->tasks->sum('percentage') > 100 ?100:$moashermkmf->tasks->sum('percentage');
-                  
+                                                //   echo 'Moasher MKMF name: ' . $moashermkmf->name .' - '.'type: tasks' . $moashermkmf->calculation_type .'<br />';
+
                 }
-                 if($moashermkmf->type == 'manual' || $moashermkmf->type == 'automatic' || $moashermkmf->type == 'tasks'){
+                 if($moashermkmf->calculation_type == 'manual' || $moashermkmf->calculation_type == 'automatic' || $moashermkmf->calculation_type == 'tasks'){
                 // if($moashermkmf->type == 'يدوي'){
                 // $contributionToTotal = ($moashermkmf->percentage / 100) * $moashermkmf->target;
                 // $moashermkmf->update(['percentage' => round($contributionToTotal, 2)]);
@@ -273,7 +275,8 @@ if (!function_exists('calculateWeightedPercentages')) {
                 if($moashermkmf->target > 0) {
                     $achievementPercentage = ($moashermkmf->reached / $moashermkmf->target) * 100;
                 }
-                 $achievementPercentage =  $achievementPercentage > 100 ? 100 : $achievementPercentage;
+                $achievementPercentage =  $achievementPercentage > 100 ? 100 : $achievementPercentage;
+                // echo  $achievementPercentage.'<br />';
                 // Calculate contribution to the total weighted percentage
                 $contributionToTotal = 0;
                 if($totalWeight > 0) {
@@ -281,8 +284,9 @@ if (!function_exists('calculateWeightedPercentages')) {
                 }
                 
                 $weightedSum += ($achievementPercentage * $moashermkmf->weight);
-                
-                
+
+                // echo 'Moasher MKMF ID: ' . $moashermkmf->id . ' - Achievement Percentage: ' . round($achievementPercentage, 2) . ' - Weighted Percentage: ' . round($contributionToTotal, 2) .'<br />';
+
                 $moashermkmf->update(['percentage' => round($achievementPercentage, 2)]);
                 $moashermkmf->update(['weighted_percentage' => round($contributionToTotal, 2)]);
             }
@@ -293,7 +297,7 @@ if (!function_exists('calculateWeightedPercentages')) {
             if($totalWeight > 0) {
                 $finalWeightedPercentage = $weightedSum / $totalWeight;
             }
-            
+            echo $finalWeightedPercentage.'<br />';
             // Update moasherstrategy with the weighted percentage
             $moasherstrategy->update(['percentage' => round($finalWeightedPercentage, 2)]);
         }

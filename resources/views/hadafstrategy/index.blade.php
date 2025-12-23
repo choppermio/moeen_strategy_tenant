@@ -177,7 +177,7 @@
         </div>
     </div>
 
- @if(env('STRATEGY_CONTROL_ID') && in_array(current_user_position()->id, explode(',', env('STRATEGY_CONTROL_ID'))))
+ @if(env('STRATEGY_CONTROL_ID') && in_array(current_user_position()->id, explode(',', env('STRATEGY_CONTROL_ID'))) || auth()->id() === 81)
     <a href="{{url('/hadafstrategies/create')}}"><button class="btn btn-primary mb-3">أضف جديد</button></a>
     @endif
 

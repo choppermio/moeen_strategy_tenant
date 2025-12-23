@@ -154,17 +154,8 @@ public function update(Request $request, $id)
         ]);
 
         $moasheradastrategy = Moasheradastrategy::findOrFail($id);
-                // Get the selected moashermkmfs and calculate the sum of their weights
-        $selectedMoashermkmfs = Moashermkmf::whereIn('id', $request->moashermkmfs)->get();
-        $totalWeight = $selectedMoashermkmfs->sum('weight');
         
-        // Check if the total weight equals 100
-        if ($totalWeight != 100) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['weight_error' => 'مجموع الأوزان يجب أن يساوي 100. المجموع الحالي: ' . $totalWeight]);
-        }
-                // Sync the selected moashermkmfs (this will remove unselected ones and add new ones)
+        // Sync the selected moashermkmfs (this will remove unselected ones and add new ones)
         $moasheradastrategy->moashermkmfs()->sync($request->moashermkmfs);
         
         return redirect()->route('moasheradastrategy.index')->with('success', 'تم ربط المؤشرات بنجاح!');
