@@ -295,7 +295,7 @@ $(document).ready(function() {
         
         // Load permissions for this position
         $.ajax({
-            url: '/permissions/' + positionId,
+            url: '{{env("APP_URL")}}/permissions/' + positionId,
             method: 'GET',
             success: function(response) {
                 if (response.success) {
@@ -344,7 +344,7 @@ $(document).ready(function() {
         var formData = $(this).serialize();
         
         $.ajax({
-            url: '/permissions/' + positionId,
+            url: '{{env("APP_URL")}}/permissions/' + positionId,
             method: 'POST',
             data: formData,
             success: function(response) {
@@ -385,7 +385,7 @@ $(document).ready(function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: '/permissions/' + permissionId,
+                    url: '{{env("APP_URL")}}/permissions/' + permissionId,
                     method: 'DELETE',
                     data: {
                         _token: '{{ csrf_token() }}'
