@@ -86,17 +86,7 @@ $due_time_string = isset($due_time) ? $due_time->format('Y-m-d h:i A') : 'N/A';
                                     @if($sent_ticket && $sent_ticket->images)
 
 @foreach ($sent_ticket->images as $image)
-<a href="
-@php
-if ($_SERVER['HTTP_HOST'] == 'strategy.qimam-community.com') {
-    $newFilePath = str_replace("public", "/public/storage", $image->filepath);
-} else {
-    $newFilePath = str_replace("public", "/storage", $image->filepath);
-}
-echo $newFilePath;
-@endphp
-" target="_blank" >{{ $image->filename }}</a><hr />
-    
+<a href="{{ image_url($image) }}" target="_blank">{{ $image->filename }}</a><hr />
 @endforeach
 @endif
                                     </div>

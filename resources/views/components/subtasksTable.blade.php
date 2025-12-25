@@ -117,14 +117,7 @@
                     @if($ticket && $ticket->images)
 
                     @foreach ($ticket->images as $image)
-                    <a href="                    @php
-                    // Remove "public/" from the filepath since storage link maps /storage to /storage/app/public
-                    $cleanPath = str_replace('public/', '', $image->filepath);
-                    $newFilePath = url('/storage/'.$cleanPath);
-                    echo $newFilePath;
-                    @endphp
-                    " target="_blank" >{{ $image->filename }}</a><hr />
-                        
+                    <a href="{{ image_url($image) }}" target="_blank">{{ $image->filename }}</a><hr />
                     @endforeach
                     @endif
                    

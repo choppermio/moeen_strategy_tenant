@@ -90,11 +90,6 @@ $subtasks = \App\Models\Subtask::where('parent_user_id', $user_id)
 
                         @if($ticket && $ticket->images)
                             @foreach ($ticket->images as $image)
-                                @php
-                                    // Remove "public/" from the filepath since storage link maps /storage to /storage/app/public
-                                    $cleanPath = str_replace('public/', '', $image->filepath);
-                                    $newFilePath = $baseUrl . "/storage/" . $cleanPath;
-                                @endphp
                                 <!-- Attachment icon with tooltip and modal trigger -->
                                 <a href="#" 
                                     class="attachment-icon" 
@@ -117,12 +112,8 @@ $subtasks = \App\Models\Subtask::where('parent_user_id', $user_id)
                                                 <div class="modal-body">
                                                      <ul>
                                                           @foreach ($ticket->images as $img)
-                                                                @php
-                                                                     $cleanPath = str_replace('public/', '', $img->filepath);
-                                                                     $fileUrl = $baseUrl . "/storage/" . $cleanPath;
-                                                                @endphp
                                                                 <li>
-                                                                     <a href="{{ $fileUrl }}" target="_blank">{{ $img->filename }}</a>
+                                                                     <a href="{{ image_url($img) }}" target="_blank">{{ $img->filename }}</a>
                                                                 </li>
                                                           @endforeach
                                                      </ul>

@@ -546,3 +546,45 @@ if (!function_exists('get_strategy_ids')) {
         return array_filter(array_map('trim', explode(',', $strategy_ids)));
     }
 }
+
+if (!function_exists('image_url')) {
+    /**
+     * Get the full URL for an image based on its storage disk
+     * 
+     * @param \App\Models\Image|string $image - Image model instance or filepath
+     * @param string|null $disk - Storage disk (s3, public, etc.) - only needed if passing filepath
+     * @return string
+     */
+    function image_url($image, $disk = null)
+    {
+        // If it's an Image model instance
+        if (is_object($image) && isset($image->filepath)) {
+            $filepath = $image->filepath;
+            $disk = $image->disk ?? 'public';
+        } else {
+            // It's a filepath string
+            $filepath = $image;
+            $disk = $disk ?? 'public';
+        }
+        
+        // Handle S3 storage
+        if ($disk === 's3') {
+            $awsUrl = env('AWS_URL');
+            if (!$awsUrl) {
+                $bucket = env('AWS_BUCKET', 'laravelrakeez');
+                $region = env('AWS_DEFAULT_REGION', 'eu-north-1');
+                $awsUrl = "https://{$bucket}.s3.{$region}.amazonaws.com";
+            }
+            return rtrim($awsUrl, '/') . '/' . ltrim($filepath, '/');
+        }
+        
+        // Handle local storage
+        // Check if file is in public/uploads
+        if (strpos($filepath, 'uploads/') === 0) {
+            return asset($filepath);
+        }
+        
+        // Otherwise assume it's in storage/app/public
+        return asset('storage/' . str_replace('public/', '', $filepath));
+    }
+}

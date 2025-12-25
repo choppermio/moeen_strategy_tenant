@@ -135,7 +135,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="ml-2">
-                                                    <a href="{{ asset('storage/' . str_replace('public/', '', $image->filepath)) }}" 
+                                                    <a href="{{ image_url($image) }}" 
                                                        target="_blank" 
                                                        class="btn btn-sm btn-outline-primary"
                                                        title="تحميل الملف">

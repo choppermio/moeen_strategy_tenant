@@ -16,6 +16,7 @@ class ImageUploadController extends Controller
 {
     public function uploadFiles(Request $request, $modelType, $modelId)
     {
+        try {
         // dd($request->to_id);
         $to_id_v = explode(',', $request->to_id);
         // return count($to_id_v).'---';
@@ -164,8 +165,10 @@ try{
                 $filename = pathinfo($originalName, PATHINFO_FILENAME);
                 $randomStr = Str::random(10); // Generates a random string of 10 characters
                 $filename = $filename . '_' . $randomStr . '.' . $extension;
-                $path = $file->store('public/uploads');
-                $image = new Image(['filename' => $filename, 'filepath' => $path]);
+                // Store file
+                $disk = env('FILESYSTEM_DRIVER', 'public');
+                $path = $file->storeAs('uploads', $filename, $disk);
+                $image = new Image(['filename' => $filename, 'filepath' => $path, 'disk' => $disk]);
                 $model->images()->save($image);
             }
             
@@ -214,10 +217,18 @@ try{
     
     return true;
     
-    
+    } catch (\Exception $e) {
+        \Log::error('S3 Upload Error: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        return response()->json([
+            'success' => false,
+            'message' => 'حدث خطأ أثناء رفع الملفات: ' . $e->getMessage()
+        ], 500);
+    }
     }
     public function uploadFilesUpdate(Request $request, $modelType, $modelId)
     {
+        try {
         // dd($request->name);
         $modelType='ticket';
      
@@ -282,8 +293,10 @@ try{
                 $filename = pathinfo($originalName, PATHINFO_FILENAME);
                 $randomStr = Str::random(10); // Generates a random string of 10 characters
                 $filename = $filename . '_' . $randomStr . '.' . $extension;
-                $path = $file->store('public/uploads');
-                $image = new Image(['filename' => $filename, 'filepath' => $path]);
+                // Store file on S3
+                $disk = env('FILESYSTEM_DRIVER', 'public');
+                $path = $file->storeAs('uploads', $filename, $disk);
+                $image = new Image(['filename' => $filename, 'filepath' => $path, 'disk' => $disk]);
                 $model->images()->save($image);
             }
             
@@ -295,6 +308,14 @@ try{
         } else {
             return response()->json(['message' => 'No files provided']);
         }
+    } catch (\Exception $e) {
+        \Log::error('S3 Upload Error: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        return response()->json([
+            'success' => false,
+            'message' => 'حدث خطأ أثناء رفع الملفات: ' . $e->getMessage()
+        ], 500);
+    }
     }
 }
 
