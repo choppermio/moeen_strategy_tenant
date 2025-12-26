@@ -149,7 +149,7 @@ $uniquetasks = array_values($uniqueTasks);
             <span class="badge badge-warning">متوقف مؤقتاً</span>
         @endif
         
-<a href="{{env("APP_URL_REAL")  }}/subtask/create?task={{$uniquetask->id}}" target="_blank">
+<a href="{{env("APP_URL_REAL")  }}/tickets/create" target="_blank">
     <button class="btn btn-secondary btn-sm padding-sm-button button" data-toggle="tooltip" data-placement="top" title="أضف مهمة فرعية"><i class="fa-solid fa-plus" ></i></button>
 </a>
 
