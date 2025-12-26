@@ -29,12 +29,19 @@
 
 <div class="form-group">
     <label for="name">المبادرات</label>
-    <select  class="selectpicker "  data-live-search="true" name="mubadara" >
+    <select  class="selectpicker "  data-live-search="true" name="mubadara" id="mubadara_select">
         @foreach ($mubadaras as $mubadara)
-        <option value="{{ $mubadara->id }}" @if($mubadara->id == $_GET['mubadara']) selected @endif>{{ $mubadara->name }}</option>
+        <option value="{{ $mubadara->id }}" @if(isset($_GET['mubadara']) && $mubadara->id == $_GET['mubadara']) selected @endif>{{ $mubadara->name }}</option>
         @endforeach
     </select>
-    </div>
+</div>
+
+<div class="form-group">
+    <label for="moasheradastrategy">مؤشر أداء استراتيجي (يمكن اختيار أكثر من واحد)</label>
+    <select class="selectpicker" data-live-search="true" multiple name="moasheradastrategy_ids[]" id="moasheradastrategy_select">
+        <option value="">اختر المبادرة أولاً</option>
+    </select>
+</div>
 
 
     <div class="form-group">
@@ -101,6 +108,43 @@ $(document).ready(function() {
             });
         }
     }, 300);
+    
+    // Load moasheradastrategies when mubadara is selected
+    $('#mubadara_select').on('change', function() {
+        var mubadaraId = $(this).val();
+        
+        if (mubadaraId) {
+            $.ajax({
+                url: '/api/moasheradastrategies-by-mubadara/' + mubadaraId,
+                type: 'GET',
+                success: function(data) {
+                    var select = $('#moasheradastrategy_select');
+                    select.empty();
+                    
+                    if (data.length > 0) {
+                        // select.append('<option value="">اختر مؤشر أداء استراتيجي</option>');
+                        $.each(data, function(index, item) {
+                            select.append('<option value="' + item.id + '">' + item.name + '</option>');
+                        });
+                    } else {
+                        select.append('<option value="">لا توجد مؤشرات أداء مرتبطة بهذه المبادرة</option>');
+                    }
+                    
+                    select.selectpicker('refresh');
+                },
+                error: function() {
+                    alert('حدث خطأ أثناء تحميل مؤشرات الأداء الاستراتيجية');
+                }
+            });
+        } else {
+            $('#moasheradastrategy_select').empty().append('<option value="">اختر المبادرة أولاً</option>').selectpicker('refresh');
+        }
+    });
+    
+    // Trigger on page load if mubadara is pre-selected
+    if ($('#mubadara_select').val()) {
+        $('#mubadara_select').trigger('change');
+    }
     
     $('#calculation_type').on('change', function() {
         var calculationType = $(this).val();

@@ -67,6 +67,12 @@ class MoashermkmfController extends Controller
         }
         
         $moashermkmf = Moashermkmf::create($data);
+        
+        // Sync moasheradastrategies if selected
+        if ($request->has('moasheradastrategy_ids')) {
+            $moashermkmf->moasheradastrategies()->sync($request->input('moasheradastrategy_ids'));
+        }
+        
         return redirect()->back()->with('success', 'تم إضافة الهدف بنجاح');
     }
 
@@ -127,6 +133,13 @@ public function update(Request $request, $id)
     }
     
     $moashermkmf->update($updateData);
+
+    // Sync moasheradastrategies if selected
+    if ($request->has('moasheradastrategy_ids')) {
+        $moashermkmf->moasheradastrategies()->sync($request->input('moasheradastrategy_ids'));
+    } else {
+        $moashermkmf->moasheradastrategies()->detach();
+    }
 
     return redirect()->route('moashermkmf.index')->with('success', 'Updated successfully!');
 }

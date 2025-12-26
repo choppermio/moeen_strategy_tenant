@@ -26,4 +26,12 @@ Route::get('/todos/{user_id}', function ($user_id) {
     $todos = Todo::where('user_id', $user_id)->where('level',5)->get();
     return $todos;
   });
+
+Route::get('/moasheradastrategies-by-mubadara/{mubadara_id}', function ($mubadara_id) {
+    $mubadara = \App\Models\Mubadara::find($mubadara_id);
+    if ($mubadara) {
+        return $mubadara->moasheradastrategies;
+    }
+    return [];
+});
   

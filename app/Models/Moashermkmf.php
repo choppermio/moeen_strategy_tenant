@@ -20,4 +20,9 @@ class Moashermkmf extends Model
   {
       return $this->belongsToMany(Task::class);
   }
+
+  public function moasheradastrategies()
+  {
+      return $this->belongsToMany(Moasheradastrategy::class, 'moasheradastrategy_moashermkmf');
+  }
 }

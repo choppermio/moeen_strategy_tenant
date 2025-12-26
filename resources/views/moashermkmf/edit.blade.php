@@ -38,6 +38,35 @@
         </div> --}}
 
         <div class="form-group">
+            <label for="name">المبادرة</label>
+            <select class="selectpicker" data-live-search="true" name="mubadara" id="mubadara_select">
+                @foreach ($mubadaras as $mubadara)
+                <option value="{{ $mubadara->id }}" {{ $moashermkmf->parent_id == $mubadara->id ? 'selected' : '' }}>{{ $mubadara->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="moasheradastrategy">مؤشر أداء استراتيجي (يمكن اختيار أكثر من واحد)</label>
+            <select class="selectpicker" data-live-search="true" multiple name="moasheradastrategy_ids[]" id="moasheradastrategy_select">
+                @php
+                    $selectedIds = $moashermkmf->moasheradastrategies->pluck('id')->toArray();
+                @endphp
+                @if($moashermkmf->parent_id)
+                    @php
+                        $mubadara = \App\Models\Mubadara::find($moashermkmf->parent_id);
+                        $moasheradastrategies = $mubadara ? $mubadara->moasheradastrategies : [];
+                    @endphp
+                    @foreach($moasheradastrategies as $moasheradastrategy)
+                        <option value="{{ $moasheradastrategy->id }}" {{ in_array($moasheradastrategy->id, $selectedIds) ? 'selected' : '' }}>
+                            {{ $moasheradastrategy->name }}
+                        </option>
+                    @endforeach
+                @endif
+            </select>
+        </div>
+
+        <div class="form-group">
             <label for="name">النوع</label>
             <select class="selectpicker" data-live-search="true" name="type">
                <option value="mk" {{ $moashermkmf->type == 'mk' ? 'selected' : '' }}>مؤشر كفاءة</option>
@@ -88,8 +117,39 @@
 
 @push('scripts')
 <script>
-// Handle calculation_type change
+// Handle calculation_type change and mubadara selection
 $(document).ready(function() {
+    // Load moasheradastrategies when mubadara is selected
+    $('#mubadara_select').on('change', function() {
+        var mubadaraId = $(this).val();
+        
+        if (mubadaraId) {
+            $.ajax({
+                url: '/api/moasheradastrategies-by-mubadara/' + mubadaraId,
+                type: 'GET',
+                success: function(data) {
+                    var select = $('#moasheradastrategy_select');
+                    var currentSelections = select.val() || [];
+                    select.empty();
+                    
+                    if (data.length > 0) {
+                        $.each(data, function(index, item) {
+                            var isSelected = currentSelections.includes(item.id.toString());
+                            select.append('<option value="' + item.id + '"' + (isSelected ? ' selected' : '') + '>' + item.name + '</option>');
+                        });
+                    } else {
+                        select.append('<option value="">لا توجد مؤشرات أداء مرتبطة بهذه المبادرة</option>');
+                    }
+                    
+                    select.selectpicker('refresh');
+                },
+                error: function() {
+                    alert('حدث خطأ أثناء تحميل مؤشرات الأداء الاستراتيجية');
+                }
+            });
+        }
+    });
+    
     $('#calculation_type').on('change', function() {
         var calculationType = $(this).val();
         var reachedField = $('#reached');
