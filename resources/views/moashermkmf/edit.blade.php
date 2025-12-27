@@ -125,7 +125,7 @@ $(document).ready(function() {
         
         if (mubadaraId) {
             $.ajax({
-                url: '/api/moasheradastrategies-by-mubadara/' + mubadaraId,
+                url: '{{ env("APP_URL") }}api/moasheradastrategies-by-mubadara/' + mubadaraId,
                 type: 'GET',
                 success: function(data) {
                     var select = $('#moasheradastrategy_select');
